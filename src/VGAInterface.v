@@ -12,11 +12,8 @@ module VGAInterface(
 
 	//////////// CLOCK //////////
 	CLOCK_50,
-	CLOCK2_50,
-	CLOCK3_50,
 
 	//////////// LED //////////
-	LEDG,
 	LEDR,
 
 	//////////// KEY //////////
@@ -32,17 +29,13 @@ module VGAInterface(
 	HEX3,
 	HEX4,
 	HEX5,
-	HEX6,
-	HEX7,
 
 	//////////// VGA //////////
 	VGA_B,
-	VGA_BLANK_N,
 	VGA_CLK,
 	VGA_G,
 	VGA_HS,
 	VGA_R,
-	VGA_SYNC_N,
 	VGA_VS 
 );
 
@@ -57,18 +50,15 @@ module VGAInterface(
 
 //////////// CLOCK //////////
 input		          		CLOCK_50;
-input		          		CLOCK2_50;
-input		          		CLOCK3_50;
 
 //////////// LED //////////
-output		     [8:0]		LEDG;
-output		    [17:0]		LEDR;
+output		    [9:0]		LEDR;
 
 //////////// KEY //////////
 input		     [3:0]		KEY;
 
 //////////// SW //////////
-input		    [17:0]		SW;
+input		    [9:0]		SW;
 
 //////////// SEG7 //////////
 output		     [6:0]		HEX0;
@@ -77,17 +67,13 @@ output		     [6:0]		HEX2;
 output		     [6:0]		HEX3;
 output		     [6:0]		HEX4;
 output		     [6:0]		HEX5;
-output		     [6:0]		HEX6;
-output		     [6:0]		HEX7;
 
 //////////// VGA //////////
-output		     [7:0]		VGA_B;
-output		          		VGA_BLANK_N;
+output		     [3:0]		VGA_B;
 output		          		VGA_CLK;
-output		     [7:0]		VGA_G;
+output		     [3:0]		VGA_G;
 output		          		VGA_HS;
-output		     [7:0]		VGA_R;
-output		          		VGA_SYNC_N;
+output		     [3:0]		VGA_R;
 output		          		VGA_VS;
 
 //=======================================================
@@ -135,14 +121,12 @@ reg 	flag =1'b0;
 //  Structural coding
 //=======================================================
 
-// output assignments
-assign VGA_BLANK_N = 1'b1;
-assign VGA_SYNC_N = 1'b1;			
+// output assignments		
 assign VGA_CLK = pixelClock;
 
 // display the X or Y position of the dot on LEDS (Binary format)
 // MSB is LEDR[10], LSB is LEDR[0]
-assign LEDR[10:0] = SW[1] ? YDotPosition : XDotPosition; 
+assign LEDR[9:0] = SW[1] ? YDotPosition : XDotPosition; 
 
 
 
@@ -299,8 +283,8 @@ end
 
 
 // PLL Module (Phase Locked Loop) used to convert a 50Mhz clock signal to a 108 MHz clock signal for the pixel clock
-VGAFrequency VGAFreq (aresetPll, CLOCK_50, pixelClock);
-
+//VGAFrequency VGAFreq (aresetPll, CLOCK_50, pixelClock);
+assign pixelClock = CLOCK_50;
 // VGA Controller Module used to generate the vertial and horizontal synch signals for the monitor and the X and Y Pixel position of the monitor display
 VGAController VGAControl (pixelClock, redValue, greenValue, blueValue, VGA_R, VGA_G, VGA_B, VGA_VS, VGA_HS, XPixelPosition, YPixelPosition);
 
@@ -363,8 +347,9 @@ begin
 	end
 end
 
-ScoreDecoder p1(P1Score, HEX7, HEX6);
+ScoreDecoder p1(P1Score, HEX1, HEX0);
 ScoreDecoder p2(P2Score, HEX5, HEX4);
 
 endmodule
+
 
