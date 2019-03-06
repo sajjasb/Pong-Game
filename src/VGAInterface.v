@@ -79,7 +79,7 @@ output		          		VGA_VS;
 //=======================================================
 //  REG/WIRE declarations
 //=======================================================
-reg	aresetPll = 0; // asynchrous reset for pll
+//reg	aresetPll = 0; // asynchrous reset for pll
 wire 	pixelClock;
 wire	[10:0] XPixelPosition;
 wire	[10:0] YPixelPosition; 
@@ -91,11 +91,11 @@ reg	[1:0] movement = 0;
 parameter r = 15;
 
 // slow clock counter variables
-reg 	[20:0] slowClockCounter = 0;
+reg 	[31:0] slowClockCounter = 0;
 wire 	slowClock;
 
 // fast clock counter variables
-reg 	[20:0] fastClockCounter = 0;
+reg 	[31:0] fastClockCounter = 0;
 wire 	fastClock;
 
 // variables for the dot 
@@ -115,7 +115,10 @@ reg 	[3:0] P1Score = 0;
 reg	[3:0] P2Score = 0;
 reg 	flag =1'b0;
 
-
+parameter RIGHT_BORDER = 1120;
+parameter LEFT_BORDER = 160;
+parameter TOP_BORDER = 128;
+parameter BOTTOM_BORDER = 896;
 
 //=======================================================
 //  Structural coding
@@ -128,21 +131,15 @@ assign VGA_CLK = pixelClock;
 // MSB is LEDR[10], LSB is LEDR[0]
 assign LEDR[9:0] = SW[1] ? YDotPosition : XDotPosition; 
 
-
-
-assign slowClock = slowClockCounter[16]; // take MSB from counter to use as a slow clock
+assign slowClock = slowClockCounter[20]; // take MSB from counter to use as a slow clock
+assign fastClock = fastClockCounter[20]; // take Middle Bit from counter to use as a slow clock
 
 always@ (posedge CLOCK_50) // generates a slow clock by selecting the MSB from a large counter
 begin
 	slowClockCounter <= slowClockCounter + 1;
-end
-
-assign fastClock = fastClockCounter[17]; // take Middle Bit from counter to use as a slow clock
-
-always@ (posedge CLOCK_50) // generates a fast clock by selecting the Middle Bit from a large counter
-begin
 	fastClockCounter <= fastClockCounter + 1;
 end
+
 
 always@(posedge fastClock) // process moves the y position of player1 paddle
 begin
@@ -151,16 +148,16 @@ begin
 	if (KEY[2] == 1'b0 && KEY[3] == 1'b0) 
 		P1y <= P1y;
 	else if (KEY[2] == 1'b0) begin
-		if (P1y+125 >896)
+		if (P1y+125 >BOTTOM_BORDER)
 			P1y <= 771;
 		else
-		P1y <= P1y + 1;
+		P1y <= P1y + 10;
 		end
 	else if (KEY[3] == 1'b0) begin
-		if(P1y < 128)
-			P1y <= 128;
+		if(P1y < TOP_BORDER)
+			P1y <= TOP_BORDER;
 		else
-		P1y <= P1y - 1;
+		P1y <= P1y - 10;
 		end
 end
 else if (SW[0] == 1'b1 || flag==1)
@@ -175,16 +172,16 @@ begin
 	if (KEY[0] == 1'b0 && KEY[1] == 1'b0) 
 		P2y <= P2y;
 	else if (KEY[0] == 1'b0) begin
-		if(P2y+125 > 896)
+		if(P2y+125 > BOTTOM_BORDER)
 			P2y <= 771;
 		else
-		P2y <= P2y + 1;
+		P2y <= P2y + 10;
 		end
 	else if (KEY[1] == 1'b0) begin
-		if(P2y < 128)
-			P2y <= 128;
+		if(P2y < TOP_BORDER)
+			P2y <= TOP_BORDER;
 		else
-		P2y <= P2y - 1;
+		P2y <= P2y - 10;
 		end
 end
 else if (SW[0] == 1'b1 || flag ==1)
@@ -197,30 +194,30 @@ if (SW[0] == 1'b0)
 	begin
 	case(movement)
 		0:		begin //Ball moves in NE direction
-				XDotPosition <= XDotPosition + 1;
-				YDotPosition <= YDotPosition - 1;
+				XDotPosition <= XDotPosition + 5;
+				YDotPosition <= YDotPosition - 5;
 				end
 		1:		begin //Ball moves in SE direction
-				XDotPosition <= XDotPosition + 1;
-				YDotPosition <= YDotPosition + 1;
+				XDotPosition <= XDotPosition + 5;
+				YDotPosition <= YDotPosition + 5;
 				end
 		2:		begin //Ball moves in SW direction
-				XDotPosition <= XDotPosition - 1;
-				YDotPosition <= YDotPosition + 1;
+				XDotPosition <= XDotPosition - 5;
+				YDotPosition <= YDotPosition + 5;
 				end
 		3:		begin //Ball moves in NW direction
-				XDotPosition <= XDotPosition - 1;
-				YDotPosition <= YDotPosition - 1;
+				XDotPosition <= XDotPosition - 5;
+				YDotPosition <= YDotPosition - 5;
 				end
 	endcase
 	
-	if(YDotPosition - r <= 128 && movement == 0) //bounce top wall from NE
+	if(YDotPosition - r <= TOP_BORDER && movement == 0) //bounce top wall from NE
 		movement = 1;
-	else if (YDotPosition - r <= 128 && movement == 3)// bounce top wall from NW
+	else if (YDotPosition - r <= TOP_BORDER && movement == 3)// bounce top wall from NW
 		movement = 2;
-	else if (YDotPosition + r >= 896 && movement == 1)	// bounce bottom wall from SE
+	else if (YDotPosition + r >= BOTTOM_BORDER && movement == 1)	// bounce bottom wall from SE
 		movement = 0;
-	else if (YDotPosition + r >= 896 && movement == 2) // bounce bottom wall from Sw
+	else if (YDotPosition + r >= BOTTOM_BORDER && movement == 2) // bounce bottom wall from Sw
 		movement = 3;
 	else if (XDotPosition -r <= P1x+25 && YDotPosition > P1y && YDotPosition < P1y+125 &&  movement == 2)//bounce left paddle from SW
 		movement = 1;
@@ -230,22 +227,18 @@ if (SW[0] == 1'b0)
 		movement = 2;
 	else if (XDotPosition + r >= P2x && YDotPosition > P2y && YDotPosition < P2y+125 &&  movement == 0)//bounce right paddle from NE
 		movement = 3;
-	else if (XDotPosition - r <= 160) begin
+	else if (XDotPosition - r <= LEFT_BORDER) begin
 		P2Score = P2Score + 1;
 		//reset ball
 		XDotPosition <= 640;
 		YDotPosition <= 512;
 		end
-	else if (XDotPosition + r >= 1120)begin
+	else if (XDotPosition + r >= RIGHT_BORDER)begin
 		P1Score = P1Score + 1;
 		//reset ball
 		XDotPosition <= 640;
 		YDotPosition <= 512;
 		end
-		
-		/***if(flag==1) begin
-			flag<=0;
-		end***/
 		
 		if(P1Score == 10 || P2Score ==10) begin
 			P1Score<=0;
@@ -263,78 +256,59 @@ else //reset ball and score
 	
 end
 
-
-/*always@(posedge slowClock) // process moves the X position of the dot
-begin
-	if (KEY[0] == 1'b0) 
-		XDotPosition <= XDotPosition + 1;
-	else if (KEY[1] == 1'b0) 
-		XDotPosition <= XDotPosition - 1;
-end
-
-always@(posedge slowClock) // process moves the Y position of the dot
-begin
-	if (KEY[2] == 1'b0) 
-		YDotPosition <= YDotPosition + 1;
-	else if (KEY[3] == 1'b0) 
-		YDotPosition <= YDotPosition - 1;
-end
-*/
-
-
-// PLL Module (Phase Locked Loop) used to convert a 50Mhz clock signal to a 108 MHz clock signal for the pixel clock
-//VGAFrequency VGAFreq (aresetPll, CLOCK_50, pixelClock);
 assign pixelClock = CLOCK_50;
 // VGA Controller Module used to generate the vertial and horizontal synch signals for the monitor and the X and Y Pixel position of the monitor display
-VGAController VGAControl (pixelClock, redValue, greenValue, blueValue, VGA_R, VGA_G, VGA_B, VGA_VS, VGA_HS, XPixelPosition, YPixelPosition);
+VGAController VGAControl (CLOCK_50, redValue, greenValue, blueValue, VGA_R, VGA_G, VGA_B, VGA_VS, VGA_HS, XPixelPosition, YPixelPosition);
+
 
 
 // COLOR ASSIGNMENT PROCESS (USER WRITES CODE HERE TO DRAW TO SCREEN)
 always@ (posedge pixelClock)
-begin		
+begin
+	
 	begin
-		if (XPixelPosition < 160) //set left green border
+		if (XPixelPosition < LEFT_BORDER) //set left green border
 		begin
 			redValue <= 8'b00000000; 
 			blueValue <= 8'b00000000;
 			greenValue <= 8'b11111111;
 		end
-		else if (XPixelPosition > 1120) // set right green border
+		else if (XPixelPosition > RIGHT_BORDER) // set right green border
 		begin
-			redValue <= 8'b00000000; 
-			blueValue <= 8'b00000000;
-			greenValue <= 8'b11111111;
+			redValue <= 8'h00; 
+			blueValue <= 8'h00;
+			greenValue <= 8'hff;
 		end
-		else if (YPixelPosition < 128 && XPixelPosition > 160 && XPixelPosition < 1120) //set top magenta border
+		else if (YPixelPosition < TOP_BORDER) //set top magenta border
 		begin
-			redValue <= 8'b11111111; 
-			blueValue <= 8'b11111111;
-			greenValue <= 8'b00000000;
+			redValue <= 8'hff; 
+			blueValue <= 8'hff;
+			greenValue <= 8'h00;
 		end
-		else if (XPixelPosition < 1120 && XPixelPosition > 160 && YPixelPosition > 896) // set bottom magenta border
+		else if (YPixelPosition > BOTTOM_BORDER) // set bottom magenta border
 		begin
-			redValue <= 8'b11111111; 
-			blueValue <= 8'b11111111;
+			redValue <= 8'hff; 
+			blueValue <= 8'hff;
 			greenValue <= 8'b00000000;
 		end
 		else if (XPixelPosition > P1x && XPixelPosition < P1x+25 && YPixelPosition > P1y && YPixelPosition < P1y+125) // draw player 1 paddle
 		begin
-			redValue <= 8'b00000000; 
-			blueValue <= 8'b111111111;
-			greenValue <= 8'b11111111;
+			redValue <= 8'h00; 
+			blueValue <= 8'hff;
+			greenValue <= 8'hff;
 		end
 		else if (XPixelPosition > P2x && XPixelPosition < P2x+25 && YPixelPosition > P2y && YPixelPosition < P2y+125) // draw player 2 paddle
 		begin
 			redValue <= 8'b00000000; 
-			blueValue <= 8'b11111111;
-			greenValue <= 8'b11111111;
+			blueValue <= 8'hff;
+			greenValue <= 8'hff;
 		end
 		//draw ball using (x-a)^2 + (y-b)^2 = r^2 where (a,b) is the center of the circle and r = 15
 		//a = XDotPosition, b = YDotPosition
 		else if (((XPixelPosition-XDotPosition)**2 
 						+ (YPixelPosition-YDotPosition)**2) < 15**2) 
 		begin
-			redValue <= 8'b11111111; 
+			redValue <= 8'hff; 
 			blueValue <= 8'b00000000;
 			greenValue <= 8'b00000000;
 		end
