@@ -7,6 +7,7 @@
 
 module wrapper(
 	input logic clock,
+	input logic pixelClock,
 	input logic reset_n,
 	
 	//required for game play
@@ -26,7 +27,7 @@ module wrapper(
 	output logic VGA_VS);
 
 
-	assign VGA_CLK = clock;
+	assign VGA_CLK = pixelClock;
 
 	
 
@@ -72,11 +73,11 @@ module wrapper(
 		end
 	end
 
-	VGAController vgactrl (clock, redValue,  greenValue, blueValue, VGA_R, VGA_G, VGA_B, 
+	VGAController vgactrl (pixelClock, redValue,  greenValue, blueValue, VGA_R, VGA_G, VGA_B, 
 	VGA_VS, VGA_HS, XPixelPosition, YPixelPosition);
 	
 	//code to draw screen
-	always_ff @(posedge clock or negedge reset_n) begin : proc_draw
+	always_ff @(posedge pixelClock or negedge reset_n) begin : proc_draw
 		if (~reset_n) begin
 			redValue <= 8'hff; 
 			blueValue <= 8'hff;
