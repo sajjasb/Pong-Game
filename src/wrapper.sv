@@ -1,9 +1,11 @@
 `default_nettype none
 
-`define RIGHT_BORDER 1120
-`define LEFT_BORDER 160
+`define RIGHT_BORDER 1024
+`define LEFT_BORDER 256
 `define TOP_BORDER 128
 `define BOTTOM_BORDER 896
+`define P1_X_POS 266
+`define P2_X_POS 989
 
 module wrapper(
 	input logic clock,
@@ -36,8 +38,8 @@ module wrapper(
 	logic	[7:0] redValue;
 	logic	[7:0] greenValue;
 	logic	[7:0] blueValue;
-	logic	[10:0] P1x = 225;
-	logic	[10:0] P2x = 1030;
+	logic	[10:0] P1x = `P1_X_POS;
+	logic	[10:0] P2x = `P2_X_POS;
 
 	logic [31:0] clockCounter;
 	logic gameClock;

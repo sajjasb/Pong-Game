@@ -42,7 +42,7 @@ module ChipInterface (
 	assign VGA_CLK = SW[9] ? VGA_CLK_1 : VGA_CLK_2;
 	
 	logic [10:0] n1P1_y, n1P2_y, n2P1_y, n2P2_y;
-	logic [10:0] game1Ball_x, game1Ball_y;
+	logic [10:0] game1Ball_x, game1Ball_y, game1Ball_x_2, game1Ball_y_2;
 	
 	logic pixelClock;
 	clkgenerator cg0(.refclk(CLOCK_50), .outclk_0(pixelClock), .rst(~SW[0]));
@@ -52,11 +52,12 @@ module ChipInterface (
 		.VGA_G(VGA_G_1), .VGA_B(VGA_B_1), .VGA_R(VGA_R_1), .VGA_HS(VGA_HS_1), .VGA_VS(VGA_VS_1));
 		
 
-	gameServer gs0 (.clock(CLOCK_50), .reset_n(SW[0]), .n1P1_y, .n1P2_y, 
-	 	.n2P1_y, .n2P2_y, .game1Ball_x, .game1Ball_y);
 
-	wrapper n2 (.clock(CLOCK_50), .reset_n(SW[0]), .pixelClock, .XDotPosition(game1Ball_x),
-		.YDotPosition(game1Ball_y), .P2y(n2P2_y), .P1y(n2P1_y), .KEY({KEY[1],KEY[0],KEY[2],KEY[3]}), .VGA_CLK(VGA_CLK_2), 
+	gameServer gs0 (.clock(CLOCK_50), .reset_n(SW[0]), .n1P1_y, .n1P2_y, 
+	 	.n2P1_y, .n2P2_y, .game1Ball_x, .game1Ball_y, .game1Ball_y_2, .game1Ball_x_2);
+
+	wrapper n2 (.clock(CLOCK_50), .reset_n(SW[0]), .pixelClock, .XDotPosition(game1Ball_x_2),
+		.YDotPosition(game1Ball_y_2), .P2y(n2P2_y), .P1y(n2P1_y), .KEY({KEY[1],KEY[0],KEY[2],KEY[3]}), .VGA_CLK(VGA_CLK_2), 
 		.VGA_G(VGA_G_2), .VGA_B(VGA_B_2), .VGA_R(VGA_R_2), .VGA_HS(VGA_HS_2), .VGA_VS(VGA_VS_2));
 		
 

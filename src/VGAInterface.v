@@ -263,62 +263,68 @@ VGAController VGAControl (CLOCK_50, redValue, greenValue, blueValue, VGA_R, VGA_
 
 
 // COLOR ASSIGNMENT PROCESS (USER WRITES CODE HERE TO DRAW TO SCREEN)
-always@ (posedge pixelClock)
-begin
-	
-	begin
-		if (XPixelPosition < LEFT_BORDER) //set left green border
-		begin
-			redValue <= 8'b00000000; 
-			blueValue <= 8'b00000000;
-			greenValue <= 8'b11111111;
-		end
-		else if (XPixelPosition > RIGHT_BORDER) // set right green border
-		begin
-			redValue <= 8'h00; 
-			blueValue <= 8'h00;
-			greenValue <= 8'hff;
-		end
-		else if (YPixelPosition < TOP_BORDER) //set top magenta border
-		begin
-			redValue <= 8'hff; 
-			blueValue <= 8'hff;
-			greenValue <= 8'h00;
-		end
-		else if (YPixelPosition > BOTTOM_BORDER) // set bottom magenta border
-		begin
-			redValue <= 8'hff; 
-			blueValue <= 8'hff;
-			greenValue <= 8'b00000000;
-		end
-		else if (XPixelPosition > P1x && XPixelPosition < P1x+25 && YPixelPosition > P1y && YPixelPosition < P1y+125) // draw player 1 paddle
-		begin
-			redValue <= 8'h00; 
-			blueValue <= 8'hff;
-			greenValue <= 8'hff;
-		end
-		else if (XPixelPosition > P2x && XPixelPosition < P2x+25 && YPixelPosition > P2y && YPixelPosition < P2y+125) // draw player 2 paddle
-		begin
-			redValue <= 8'b00000000; 
-			blueValue <= 8'hff;
-			greenValue <= 8'hff;
-		end
-		//draw ball using (x-a)^2 + (y-b)^2 = r^2 where (a,b) is the center of the circle and r = 15
-		//a = XDotPosition, b = YDotPosition
-		else if (((XPixelPosition-XDotPosition)**2 
-						+ (YPixelPosition-YDotPosition)**2) < 15**2) 
-		begin
-			redValue <= 8'hff; 
-			blueValue <= 8'b00000000;
-			greenValue <= 8'b00000000;
-		end
-		else // default background is black
-		begin
-			redValue <= 8'b00000000; 
-			blueValue <= 8'b00000000;
-			greenValue <= 8'b00000000;
-		end
-	end
+//always@ (posedge pixelClock)
+//begin
+//	
+//	begin
+//		if (XPixelPosition < LEFT_BORDER) //set left green border
+//		begin
+//			redValue <= 8'b00000000; 
+//			blueValue <= 8'b00000000;
+//			greenValue <= 8'b11111111;
+//		end
+//		else if (XPixelPosition > RIGHT_BORDER) // set right green border
+//		begin
+//			redValue <= 8'h00; 
+//			blueValue <= 8'h00;
+//			greenValue <= 8'hff;
+//		end
+//		else if (YPixelPosition < TOP_BORDER) //set top magenta border
+//		begin
+//			redValue <= 8'hff; 
+//			blueValue <= 8'hff;
+//			greenValue <= 8'h00;
+//		end
+//		else if (YPixelPosition > BOTTOM_BORDER) // set bottom magenta border
+//		begin
+//			redValue <= 8'hff; 
+//			blueValue <= 8'hff;
+//			greenValue <= 8'b00000000;
+//		end
+//		else if (XPixelPosition > P1x && XPixelPosition < P1x+25 && YPixelPosition > P1y && YPixelPosition < P1y+125) // draw player 1 paddle
+//		begin
+//			redValue <= 8'h00; 
+//			blueValue <= 8'hff;
+//			greenValue <= 8'hff;
+//		end
+//		else if (XPixelPosition > P2x && XPixelPosition < P2x+25 && YPixelPosition > P2y && YPixelPosition < P2y+125) // draw player 2 paddle
+//		begin
+//			redValue <= 8'b00000000; 
+//			blueValue <= 8'hff;
+//			greenValue <= 8'hff;
+//		end
+//		//draw ball using (x-a)^2 + (y-b)^2 = r^2 where (a,b) is the center of the circle and r = 15
+//		//a = XDotPosition, b = YDotPosition
+//		else if (((XPixelPosition-XDotPosition)**2 
+//						+ (YPixelPosition-YDotPosition)**2) < 15**2) 
+//		begin
+//			redValue <= 8'hff; 
+//			blueValue <= 8'b00000000;
+//			greenValue <= 8'b00000000;
+//		end
+//		else // default background is black
+//		begin
+//			redValue <= 8'b00000000; 
+//			blueValue <= 8'b00000000;
+//			greenValue <= 8'b00000000;
+//		end
+//	end
+//end
+always@ (posedge pixelClock) begin
+
+	redValue = 8'hff;
+	blueValue = 8'hff;
+	greenValue = 8'hff;
 end
 
 ScoreDecoder p1(P1Score, HEX1, HEX0);

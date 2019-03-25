@@ -1,9 +1,11 @@
 `default_nettype none
 
-`define RIGHT_BORDER 1120
-`define LEFT_BORDER 160
+`define RIGHT_BORDER 1024
+`define LEFT_BORDER 256
 `define TOP_BORDER 128
 `define BOTTOM_BORDER 896
+`define P1_X_POS 266
+`define P2_X_POS 989
 
 module gameServer (
 	input logic clock, reset_n,
@@ -22,6 +24,9 @@ module gameServer (
 
 	output logic [10:0] game1Ball_x,
 	output logic [10:0] game1Ball_y,
+	
+	output logic [10:0] game1Ball_x_2,
+	output logic [10:0] game1Ball_y_2,
 
 	output logic [10:0] game2Ball_x,
 	output logic [10:0] game2Ball_y
@@ -39,18 +44,36 @@ module gameServer (
 	logic [2:0] movement;
 	logic flag;
 	
+
+	always_comb begin : proc_game1ball2
+		game1Ball_x_2 = 1120-game1Ball_x;
+		game1Ball_y_2 = game1Ball_y;
+	end
+
+	logic [31:0] clockCounter;
+	logic gameClock;
+	assign gameClock = clockCounter[20];
 	always_ff @(posedge clock or negedge reset_n) begin
-		logic [10:0] P1x = 225;
-		logic [10:0] P2x = 1030;
+		if(~reset_n) begin
+			clockCounter <= 0;
+		end else begin
+			clockCounter <= clockCounter+1;
+		end
+	end
+	
+	always_ff @(posedge gameClock or negedge reset_n) begin
+		logic [10:0] P1x = `P1_X_POS;
+		logic [10:0] P2x = `P2_X_POS;
 		logic [10:0] r = 15;
 		
 		
 		if(~reset_n) begin
-			game1Ball_x <= 500;
-			game1Ball_y <= 500;
+			game1Ball_x <= (`RIGHT_BORDER+`LEFT_BORDER)/2;
+			game1Ball_y <= (`TOP_BORDER+`BOTTOM_BORDER)/2;
 			movement <= 0;
 		end
 		else begin
+			
 			case(movement)
 				0:	begin //Ball moves in NE direction
 					game1Ball_x <= game1Ball_x + 5;
@@ -87,12 +110,12 @@ module gameServer (
 			else if (game1Ball_x + r >= P2x && game1Ball_y > n2P1_y && game1Ball_y < n2P1_y+125 &&  movement == 0)//bounce right paddle from NE
 				movement <= 3;
 			else if (game1Ball_x - r <= `LEFT_BORDER) begin
-				game1Ball_x <= 500;
-				game1Ball_y <= 500;
+				game1Ball_x <= (`RIGHT_BORDER+`LEFT_BORDER)/2;
+				game1Ball_y <= (`TOP_BORDER+`BOTTOM_BORDER)/2;
 			end
 			else if (game1Ball_x + r >= `RIGHT_BORDER)begin
-				game1Ball_x <= 500;
-				game1Ball_y <= 500;
+				game1Ball_x <= (`RIGHT_BORDER+`LEFT_BORDER)/2;
+				game1Ball_y <= (`TOP_BORDER+`BOTTOM_BORDER)/2;
 			end
 		end
 	end
